@@ -20,7 +20,7 @@ class Heuristic(object):
         @param params: The parameters of your heuristic method if any as a
                dictionary. Implementation should provide default values in the function.
         '''
-        raise "Not Implemented Error"
+        self.params = params
 
     def run(self, instance: Instance, params: Dict=dict()) -> Solution:
         '''
