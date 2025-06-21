@@ -19,11 +19,14 @@ class Solution(object):
     Solution class
     '''
 
-    def __init__(self, instance: Instance):
+    def __init__(self, instance: Instance, alpha: float = 0.5, beta: float = 0.5):
         '''
         Constructor
         '''
-        raise "Not implemented error"
+        self._instance = instance
+        self._alpha = alpha
+        self._beta = beta
+        self.reset()
 
 
     @property
@@ -38,7 +41,14 @@ class Solution(object):
         '''
         Resets the solution: everything needs to be replanned
         '''
-        raise "Not implemented error"
+        for machine in self._instance.machines:
+            machine.reset()
+        
+        for job in self._instance.jobs:
+            job.reset()
+        
+        for operation in self._instance.operations:
+            operation.reset()
 
     @property
     def is_feasible(self) -> bool:
@@ -46,7 +56,8 @@ class Solution(object):
         Returns True if the solution respects the constraints.
         To call this function, all the operations must be planned.
         '''
-        raise "Not implemented error"
+        return all(op.assigned for op in self.all_operations)
+
 
     @property
     def evaluate(self) -> int:
@@ -60,7 +71,13 @@ class Solution(object):
         '''
         Returns the value of the objective function
         '''
-        raise "Not implemented error"
+        # E: total energy consumption
+        total_energy = self.total_energy_consumption
+
+        # C_max: maximum completion time of a job
+        max_completion_time = self.cmax
+
+        return self._alpha * total_energy + self._beta * max_completion_time
 
     @property
     def cmax(self) -> int:
@@ -171,7 +188,7 @@ class Solution(object):
         Returns the available operations for scheduling:
         all constraints have been met for those operations to start
         '''
-        raise "Not implemented error"
+        return [op for op in self._instance.operations if not op.assigned and op.is_ready(op.min_start_time)]
 
     @property
     def all_operations(self) -> List[Operation]:

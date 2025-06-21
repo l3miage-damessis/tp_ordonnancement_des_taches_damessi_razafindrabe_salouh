@@ -34,6 +34,7 @@ class Machine(object):
         self._start_times: List[int] = [] 
         self._stop_times: List[int] = []  
         self._available_time = 0
+        self._active = False
 
     def reset(self):
         self._scheduled_operations.clear()
@@ -101,6 +102,7 @@ class Machine(object):
         assert(self.available_time <= at_time), "Cannot start machine before it is available."
         self._start_times.append(at_time)
         self._available_time = self._start_times[-1] + self._set_up_time
+        self._active = True
 
     def stop(self, at_time):
         """
@@ -110,7 +112,7 @@ class Machine(object):
         assert(self.available_time <= at_time), "Cannot stop machine before it is available."
         self._stop_times.append(at_time)
         self._available_time = self._stop_times[-1] + self.tear_down_time
-        
+        self._active = False
 
     @property
     def working_time(self) -> int:
@@ -127,7 +129,7 @@ class Machine(object):
             total_working_time += self._end_time - self._start_times[-1] 
 
         return total_working_time
-
+    
     @property
     def start_times(self) -> List[int]:
         """
@@ -145,6 +147,15 @@ class Machine(object):
         if len(self._start_times) > len(self._stop_times):
             return sorted(self._stop_times + [self._end_time])
         return sorted(self._stop_times)
+
+    @property
+    def active(self) -> bool:
+        """
+        Returns the list of the times at which the machine is started
+        in increasing order
+        """
+        return self._active
+
 
     @property
     def total_energy_consumption(self) -> int:
@@ -175,3 +186,4 @@ class Machine(object):
 
     def __repr__(self):
         return str(self)
+

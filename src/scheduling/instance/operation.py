@@ -150,13 +150,15 @@ class Operation(object):
         and processed before at_time.
         False otherwise
         '''
-        if not self._predecessors:
-            return True
-        
-        for pred in self._predecessors:
-            if not pred.assigned or pred.end_time > at_time:
+        for pred in self.predecessors:
+            # Check if predecessor is assigned
+            if not pred.assigned:
+                return False
+            # Check if predecessor finishes before or at at_time
+            if pred.end_time > at_time:
                 return False
         return True
+
 
 
     def schedule(self, machine_id: int, at_time: int, check_success=True) -> bool:
