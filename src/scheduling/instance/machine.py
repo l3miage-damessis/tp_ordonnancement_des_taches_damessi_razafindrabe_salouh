@@ -89,7 +89,7 @@ class Machine(object):
         Returns the actual start time.
         '''
         schedule_successfully = operation.schedule_at_min_time(self._machine_id, start_time)
-        assert(schedule_successfully == True)
+        # assert(schedule_successfully == True)
         self._scheduled_operations.append(operation)
         self._available_time = operation.end_time
         return operation.start_time

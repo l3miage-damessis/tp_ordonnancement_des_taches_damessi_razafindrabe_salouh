@@ -7,6 +7,7 @@ import csv
 import os
 from typing import List
 from matplotlib import pyplot as plt
+from matplotlib.patches import Patch
 from src.scheduling.instance.instance import Instance
 from src.scheduling.instance.operation import Operation
 
@@ -211,161 +212,260 @@ class Solution(object):
             start_time = max(machine.available_time, start_up_time + machine.set_up_time)
         machine.add_operation(operation, start_time)
 
+    # def gantt(self, colormapname):
+    #     """
+    #     Generate a plot of the planning.
+    #     Standard colormaps can be found at https://matplotlib.org/stable/users/explain/colors/colormaps.html
+    #     """
+    #     fig, ax = plt.subplots()
+    #     colormap = colormaps[colormapname]
+
+    #     # Define a distinct color for idle time (e.g., light grey)
+    #     idle_color = '#D3D3D3' # Light grey hex code
+
+    #     for machine in self.inst.machines:
+    #         # Sort all activities for the machine: operations, set-up, and tear-down
+    #         # We'll create temporary "activity" objects to sort them by start time
+    #         all_activities = []
+
+    #         # Add operations
+    #         for op in machine.scheduled_operations:
+    #             all_activities.append({'type': 'operation', 'start': op.start_time, 'end': op.end_time, 'data': op})
+
+    #         # Add set-up and tear-down as distinct activities
+    #         for i in range(len(machine.start_times)):
+    #             start_machine_period = machine.start_times[i]
+    #             stop_machine_period = machine.stop_times[i]
+                
+    #             # Set-up activity
+    #             set_up_start = start_machine_period
+    #             set_up_end = set_up_start + machine.set_up_time
+    #             all_activities.append({'type': 'setup', 'start': set_up_start, 'end': set_up_end, 'data': None})
+
+    #             # Tear-down activity
+    #             tear_down_start = stop_machine_period - machine.tear_down_time # Teardown ends at machine stop time
+    #             tear_down_end = stop_machine_period
+    #             all_activities.append({'type': 'teardown', 'start': tear_down_start, 'end': tear_down_end, 'data': None})
+
+    #         # Sort all activities by their start time
+    #         all_activities.sort(key=lambda x: x['start'])
+
+    #         # Now, iterate through the distinct machine active periods
+    #         for period_idx in range(len(machine.start_times)):
+    #             machine_period_start = machine.start_times[period_idx]
+    #             machine_period_end = machine.stop_times[period_idx]
+                
+    #             # `last_activity_end_time` should start from the beginning of the current machine active period
+    #             last_activity_end_time = machine_period_start
+
+    #             # Filter activities that fall within the current machine active period
+    #             activities_in_period = [
+    #                 act for act in all_activities 
+    #                 if act['start'] >= machine_period_start and act['end'] <= machine_period_end
+    #             ]
+    #             # Sort these activities again to ensure correct order within the period
+    #             activities_in_period.sort(key=lambda x: x['start'])
+
+    #             for activity in activities_in_period:
+    #                 activity_start = activity['start']
+    #                 activity_end = activity['end']
+    #                 activity_duration = activity_end - activity_start
+    #                 activity_type = activity['type']
+
+    #                 # Plot idle time before the current activity if there's a gap
+    #                 # Ensure idle time is within the machine's active period and valid duration
+    #                 if activity_start > last_activity_end_time and (activity_start - last_activity_end_time) > 0.001: # Check for a meaningful gap
+    #                     idle_start = last_activity_end_time
+    #                     idle_duration = activity_start - last_activity_end_time
+    #                     ax.broken_barh(
+    #                         [(idle_start, idle_duration)],
+    #                         (machine.machine_id - 0.4, 0.8),
+    #                         facecolors=idle_color,
+    #                         edgecolor='black',
+    #                         hatch='////'
+    #                     )
+    #                     ax.text(
+    #                         idle_start + idle_duration / 2.0,
+    #                         machine.machine_id,
+    #                         'Idle',
+    #                         rotation=90,
+    #                         ha='center',
+    #                         va='center',
+    #                         fontsize=7,
+    #                         color='grey'
+    #                     )
+
+    #                 # Plot the current activity (operation, setup, or teardown)
+    #                 color = None
+    #                 label = ""
+                    
+    #                 if activity_type == 'operation':
+    #                     op = activity['data']
+    #                     color_index = op.job_id + 2
+    #                     if color_index >= colormap.N:
+    #                         color_index = color_index % colormap.N
+    #                     color = colormap(color_index)
+    #                     label = f"O{op.operation_id}_J{op.job_id}"
+    #                 elif activity_type == 'setup':
+    #                     color = colormap(0) # Color for setup
+    #                     label = "Setup"
+    #                 elif activity_type == 'teardown':
+    #                     color = colormap(1) # Color for teardown
+    #                     label = "Teardown"
+
+    #                 ax.broken_barh(
+    #                     [(activity_start, activity_duration)],
+    #                     (machine.machine_id - 0.4, 0.8),
+    #                     facecolors=color,
+    #                     edgecolors='black'
+    #                 )
+
+    #                 # Add text label for the activity
+    #                 ax.text(
+    #                     activity_start + activity_duration / 2.0,
+    #                     machine.machine_id,
+    #                     label,
+    #                     rotation=90,
+    #                     ha='center',
+    #                     va='center',
+    #                     fontsize=8
+    #                 )
+                    
+    #                 last_activity_end_time = activity_end # Update for the next idle calculation
+
+    #             # Handle potential idle time at the end of a machine's active period
+    #             # if there's space between the last activity and the machine's stop_time
+    #             if machine_period_end > last_activity_end_time and (machine_period_end - last_activity_end_time) > 0.001:
+    #                 idle_start = last_activity_end_time
+    #                 idle_duration = machine_period_end - last_activity_end_time
+    #                 ax.broken_barh(
+    #                     [(idle_start, idle_duration)],
+    #                     (machine.machine_id - 0.4, 0.8),
+    #                     facecolors=idle_color,
+    #                     edgecolor='black',
+    #                     hatch='////'
+    #                 )
+    #                 ax.text(
+    #                     idle_start + idle_duration / 2.0,
+    #                     machine.machine_id,
+    #                     'Idle',
+    #                     rotation=90,
+    #                     ha='center',
+    #                     va='center',
+    #                     fontsize=7,
+    #                     color='grey'
+    #                 )
+
+
+    #     fig = ax.figure
+    #     fig.set_size_inches(12, 6)
+
+    #     ax.set_yticks(range(self.inst.nb_machines))
+    #     ax.set_yticklabels([f'M{machine_id+1}' for machine_id in range(self.inst.nb_machines)])
+    #     ax.set_xlabel('Time')
+    #     ax.set_ylabel('Machine')
+    #     ax.set_title('Gantt Chart with Idle Times')
+    #     ax.grid(True)
+    #     ax.set_xlim(left=0) # Ensure the plot starts from 0 or appropriate minimum time
+
+    #     return plt
+
     def gantt(self, colormapname):
         """
-        Generate a plot of the planning.
+        Generate a plot of the scheduling with operations, setup, teardown, and idle times.
         Standard colormaps can be found at https://matplotlib.org/stable/users/explain/colors/colormaps.html
         """
         fig, ax = plt.subplots()
         colormap = colormaps[colormapname]
+        idle_color = '#D3D3D3'
+        idle_hatch = '////'
 
-        # Define a distinct color for idle time (e.g., light grey)
-        idle_color = '#D3D3D3' # Light grey hex code
+        def draw_block(start, duration, label=None, color=None, hatch=None, fontsize=7, edgecolor='black'):
+            ax.broken_barh(
+                [(start, duration)],
+                (machine.machine_id - 0.4, 0.8),
+                facecolors=color,
+                edgecolor=edgecolor,
+                hatch=hatch,
+                linewidth=0.5
+            )
+            if label:
+                ax.text(
+                    start + duration / 2,
+                    machine.machine_id,
+                    label,
+                    rotation=90,
+                    ha='center',
+                    va='center',
+                    fontsize=fontsize,
+                    color='gray' if label == 'idle' else 'black'
+                )
 
         for machine in self.inst.machines:
-            # Sort all activities for the machine: operations, set-up, and tear-down
-            # We'll create temporary "activity" objects to sort them by start time
-            all_activities = []
+            operations = sorted(machine.scheduled_operations, key=lambda op: op.start_time)
+            set_up_time = machine.set_up_time
+            tear_down_time = machine.tear_down_time
 
-            # Add operations
-            for op in machine.scheduled_operations:
-                all_activities.append({'type': 'operation', 'start': op.start_time, 'end': op.end_time, 'data': op})
+            for start, stop in zip(machine.start_times, machine.stop_times):
+                setup_end = start + set_up_time
+                teardown_start = stop
 
-            # Add set-up and tear-down as distinct activities
-            for i in range(len(machine.start_times)):
-                start_machine_period = machine.start_times[i]
-                stop_machine_period = machine.stop_times[i]
-                
-                # Set-up activity
-                set_up_start = start_machine_period
-                set_up_end = set_up_start + machine.set_up_time
-                all_activities.append({'type': 'setup', 'start': set_up_start, 'end': set_up_end, 'data': None})
+                # Draw setup and teardown
+                draw_block(start, set_up_time, 'set up', colormap(0), None, fontsize=8)
+                draw_block(stop, tear_down_time, 'tear down', colormap(1), None, fontsize=8)
 
-                # Tear-down activity
-                tear_down_start = stop_machine_period - machine.tear_down_time # Teardown ends at machine stop time
-                tear_down_end = stop_machine_period
-                all_activities.append({'type': 'teardown', 'start': tear_down_start, 'end': tear_down_end, 'data': None})
+                # Get operations within this active window
+                ops_in_window = [op for op in operations if setup_end <= op.start_time and op.end_time <= teardown_start]
 
-            # Sort all activities by their start time
-            all_activities.sort(key=lambda x: x['start'])
+                # Idle before first operation
+                if ops_in_window:
+                    if ops_in_window[0].start_time > setup_end:
+                        draw_block(setup_end,
+                                ops_in_window[0].start_time - setup_end,
+                                'idle', idle_color, idle_hatch)
 
-            # Now, iterate through the distinct machine active periods
-            for period_idx in range(len(machine.start_times)):
-                machine_period_start = machine.start_times[period_idx]
-                machine_period_end = machine.stop_times[period_idx]
-                
-                # `last_activity_end_time` should start from the beginning of the current machine active period
-                last_activity_end_time = machine_period_start
+                    # Idle between operations
+                    for prev_op, next_op in zip(ops_in_window[:-1], ops_in_window[1:]):
+                        if next_op.start_time > prev_op.end_time:
+                            draw_block(prev_op.end_time,
+                                    next_op.start_time - prev_op.end_time,
+                                    'idle', idle_color, idle_hatch)
 
-                # Filter activities that fall within the current machine active period
-                activities_in_period = [
-                    act for act in all_activities 
-                    if act['start'] >= machine_period_start and act['end'] <= machine_period_end
-                ]
-                # Sort these activities again to ensure correct order within the period
-                activities_in_period.sort(key=lambda x: x['start'])
+                    # Idle after last operation
+                    if ops_in_window[-1].end_time < teardown_start:
+                        draw_block(ops_in_window[-1].end_time,
+                                teardown_start - ops_in_window[-1].end_time,
+                                'idle', idle_color, idle_hatch)
 
-                for activity in activities_in_period:
-                    activity_start = activity['start']
-                    activity_end = activity['end']
-                    activity_duration = activity_end - activity_start
-                    activity_type = activity['type']
-
-                    # Plot idle time before the current activity if there's a gap
-                    # Ensure idle time is within the machine's active period and valid duration
-                    if activity_start > last_activity_end_time and (activity_start - last_activity_end_time) > 0.001: # Check for a meaningful gap
-                        idle_start = last_activity_end_time
-                        idle_duration = activity_start - last_activity_end_time
-                        ax.broken_barh(
-                            [(idle_start, idle_duration)],
-                            (machine.machine_id - 0.4, 0.8),
-                            facecolors=idle_color,
-                            edgecolor='black',
-                            hatch='////'
-                        )
-                        ax.text(
-                            idle_start + idle_duration / 2.0,
-                            machine.machine_id,
-                            'Idle',
-                            rotation=90,
-                            ha='center',
-                            va='center',
-                            fontsize=7,
-                            color='grey'
-                        )
-
-                    # Plot the current activity (operation, setup, or teardown)
-                    color = None
-                    label = ""
-                    
-                    if activity_type == 'operation':
-                        op = activity['data']
-                        color_index = op.job_id + 2
-                        if color_index >= colormap.N:
-                            color_index = color_index % colormap.N
-                        color = colormap(color_index)
+                    # Draw operations
+                    for op in ops_in_window:
+                        duration = op.end_time - op.start_time
                         label = f"O{op.operation_id}_J{op.job_id}"
-                    elif activity_type == 'setup':
-                        color = colormap(0) # Color for setup
-                        label = "Setup"
-                    elif activity_type == 'teardown':
-                        color = colormap(1) # Color for teardown
-                        label = "Teardown"
+                        color_index = (op.job_id + 2) % colormap.N
+                        draw_block(op.start_time, duration, label, colormap(color_index), None, fontsize=8)
 
-                    ax.broken_barh(
-                        [(activity_start, activity_duration)],
-                        (machine.machine_id - 0.4, 0.8),
-                        facecolors=color,
-                        edgecolors='black'
-                    )
-
-                    # Add text label for the activity
-                    ax.text(
-                        activity_start + activity_duration / 2.0,
-                        machine.machine_id,
-                        label,
-                        rotation=90,
-                        ha='center',
-                        va='center',
-                        fontsize=8
-                    )
-                    
-                    last_activity_end_time = activity_end # Update for the next idle calculation
-
-                # Handle potential idle time at the end of a machine's active period
-                # if there's space between the last activity and the machine's stop_time
-                if machine_period_end > last_activity_end_time and (machine_period_end - last_activity_end_time) > 0.001:
-                    idle_start = last_activity_end_time
-                    idle_duration = machine_period_end - last_activity_end_time
-                    ax.broken_barh(
-                        [(idle_start, idle_duration)],
-                        (machine.machine_id - 0.4, 0.8),
-                        facecolors=idle_color,
-                        edgecolor='black',
-                        hatch='////'
-                    )
-                    ax.text(
-                        idle_start + idle_duration / 2.0,
-                        machine.machine_id,
-                        'Idle',
-                        rotation=90,
-                        ha='center',
-                        va='center',
-                        fontsize=7,
-                        color='grey'
-                    )
-
-
-        fig = ax.figure
+        # Axis configuration
         fig.set_size_inches(12, 6)
-
-        ax.set_yticks(range(self.inst.nb_machines))
-        ax.set_yticklabels([f'M{machine_id+1}' for machine_id in range(self.inst.nb_machines)])
+        ax.set_yticks(range(self._instance.nb_machines))
+        ax.set_yticklabels([f'M{mid+1}' for mid in range(self.inst.nb_machines)])
         ax.set_xlabel('Time')
         ax.set_ylabel('Machine')
-        ax.set_title('Gantt Chart with Idle Times')
+        ax.set_title('Gantt Chart')
         ax.grid(True)
-        ax.set_xlim(left=0) # Ensure the plot starts from 0 or appropriate minimum time
+
+        # Legend
+        legend_elements = [
+            Patch(facecolor=colormap(0), edgecolor='black', label='Set up'),
+            Patch(facecolor=colormap(1), edgecolor='black', label='Tear down'),
+            Patch(facecolor=idle_color, edgecolor='black', hatch=idle_hatch, label='Idle time'),
+        ]
+
+        job_ids = sorted({op.job_id for m in self.inst.machines for op in m.scheduled_operations})
+        for job_id in job_ids:
+            color_index = (job_id + 2) % colormap.N
+            legend_elements.append(Patch(facecolor=colormap(color_index), edgecolor='black', label=f'Job {job_id}'))
+
+        ax.legend(handles=legend_elements, loc='center left', bbox_to_anchor=(1.01, 0.5), title='Legend')
+        fig.tight_layout()
 
         return plt
-
