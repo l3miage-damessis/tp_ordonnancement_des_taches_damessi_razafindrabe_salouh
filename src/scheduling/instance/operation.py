@@ -54,8 +54,6 @@ class Operation(object):
         '''
         Removes scheduling informations
         '''
-        self._predecessors = []
-        self._successors = []
         self._schedule_info = None
 
     def add_predecessor(self, operation):

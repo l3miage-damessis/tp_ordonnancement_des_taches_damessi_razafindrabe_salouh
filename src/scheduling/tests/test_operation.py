@@ -80,10 +80,6 @@ class TestOperation(unittest.TestCase):
         self.operation.reset()
 
         self.assertIsNone(self.operation._schedule_info)
-        # Note: reset in the provided code clears these, but reciprocal links
-        # on other operations are *not* cleared. This test reflects only the operation itself.
-        self.assertEqual(self.operation.predecessors, []) 
-        self.assertEqual(self.operation.successors, [])
 
     def test_add_machine_option(self):
         """Tests adding machine options."""
