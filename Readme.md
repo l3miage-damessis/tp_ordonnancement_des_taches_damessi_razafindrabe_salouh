@@ -35,7 +35,6 @@ python -m coverage html
 ```
 Ce rapport sera disponible dans le dossier `htmlcov`. Pour consulter les résultats, ouvrez simplement le fichier `htmlcov/index.html` avec un navigateur web.
 
-[Consulter le rapport de couverture complet](./htmlcov/index.html)
 
 
 ## Compte Rendu Complet
