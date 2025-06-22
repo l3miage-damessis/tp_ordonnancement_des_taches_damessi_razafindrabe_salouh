@@ -39,7 +39,9 @@
 #### Variables de décision
 
 - $x_{j,o,m}$ $\in$ $\{0,1\}$ : 1 si l’opération $o$ du job $j$ est affectée à la machine $m$, 0 sinon.
+
 - $s_{j,o,m}$ $\in$ $\mathbb{R}^+$ : instant de début de l’opération $o$ du job $j$ sur la machine $m$.
+
 - $a_m^k$, $b_m^k$ $\in$ $\mathbb{R}^+$ : début et fin de la $k$-ième plage d’activité de la machine $m$ avec $a_m^k \leq b_m^k$.
 
 #### Contraintes
@@ -124,6 +126,7 @@ $$
 #### Objectifs
 
 - **Minimisation de la consommation d’énergie totale** (incluant allumage, fonctionnement actif, inactivité, extinction).
+
 - **Minimisation de la durée totale du planning**.
 
 
@@ -137,8 +140,11 @@ $$
 
 
 avec :
-- $E$ : énergie totale consommée,
-- $C_{\max}$ : durée totale du planning,
+
+- $E$ : énergie totale consommée
+
+- $C_{\max}$ : durée totale du planning
+
 - $\alpha, \beta$ : coefficients de pondération.
 
 
@@ -149,7 +155,9 @@ avec :
 Une solution est **réalisable** si toutes les contraintes sont respectées.
 
 Son évaluation repose sur :
-- $E$ : somme des énergies d’allumage, de traitement, d’inactivité et d’extinction des machines utilisées,
+
+- $E$ : somme des énergies d’allumage, de traitement, d’inactivité et d’extinction des machines utilisées
+
 - $C_{\max}$ : dernier instant d'activité de toutes les machines,
 
 
@@ -161,9 +169,12 @@ $$
 f_{\text{pénalisée}} = f + \lambda \cdot \text{Violations}
 $$
 
-où 
+où :
+
 - $f$ est la valeur de la fonction objectif originale
+
 - $\lambda$ est un coefficient de pénalité élevé representant le cout d'une violation.
+
 - $\text{Violations}$ mesure l’ampleur des contraintes violées
 
 
@@ -172,8 +183,11 @@ où
 #### Exemple
 
 - 1 job $j_1$ avec 2 opérations $o_0$, $o_1$ ;
+
 - 1 seule machine $m_1$ compatible ;
+
 - Durées : $d_{j_1,o_0,m_1}$ = $60$, $d_{j_1,o_1,m_1}$ = $70$ ;
+
 - Limite de disponibilité : $T^{\text{max}}_{m_1} = 100$.
 
 #### Analyse
@@ -197,19 +211,26 @@ La fonction de coût utilisée est :
 $Coût(o, j, m) = (\alpha \times e_{j,o,m}) + (\beta \times d_{j,o,m})$
 
 où :
+
 - $e_{j,o,m}$ est l'énergie consommée pour exécuter l'operation $o$ du job $j$ sur la machine $m$
+
 - $d_{j,o,m}$ est la durée d’exécution de l’opération $o$ du job $j$ sur la machine $m$
+
 - $\alpha, \beta$ sont des coefficients positifs permettant de pondérer l’importance de la durée et de l’énergie.
 
 #### Optimisation de la consommation passive
 
 Lorsqu’une machine reste inactive entre deux opérations, l’algorithme évalue s’il est préférable :
 - de la laisser allumée (consommation passive),
+
 - ou de l’éteindre temporairement et de la rallumer juste à temps.
 
 Ce choix dépend :
+
 - du **coût énergétique d’allumage/extinction**,
+
 - du **temps nécessaire pour rallumer** la machine,
+
 - de la **durée d’inactivité**.
 
 Cela permet de limiter la consommation énergétique dans les phases creuses, en intégrant une décision locale sur l’état de la machine. 
@@ -218,7 +239,9 @@ Il faut noter que n'ayant pas une vision complete ce heuristique ne produit pas 
 #### Complexite
 
 Soit :
+
 - $|\mathcal{O}|$ le nombre total d'opérations
+
 - $|\mathcal{M}|$ le nombre de machines.
 
 Pour chaque opération, l’algorithme évalue le coût sur toutes les machines admissibles. La complexité est donc :
@@ -236,12 +259,17 @@ Le choix est uniforme parmi les machines admissibles à l’opération, ce qui p
 #### Optimisation de la consommation passive
 
 Lorsqu’une machine reste inactive entre deux opérations, l’algorithme évalue s’il est préférable :
+
 - de la laisser allumée (consommation passive),
+
 - ou de l’éteindre temporairement et de la rallumer juste à temps.
 
 Ce choix dépend :
+
 - du **coût énergétique d’allumage/extinction**,
+
 - du **temps nécessaire pour rallumer** la machine,
+
 - de la **durée d’inactivité**.
 
 Cela permet de limiter la consommation énergétique dans les phases creuses, en intégrant une décision locale sur l’état de la machine.
@@ -250,6 +278,7 @@ Cela permet de limiter la consommation énergétique dans les phases creuses, en
 #### Complexite
 
 Soit :
+
 - $|\mathcal{O}|$ le nombre total d'opérations
 
 Aucune recherche parmi les machines n’est effectuée. Chaque opération se voit attribuer une machine en temps constant (tirage aléatoire), et l’optimisation de consommation est locale.
@@ -266,15 +295,21 @@ Pour améliorer les solutions initiales obtenues par les heuristiques, nous prop
 #### Voisinage 1 : Réaffectation d’une opération
 
 - **Principe** : On choisit une opération et on modifie la machine sur laquelle elle est exécutée, en la déplaçant vers une autre machine admissible.
+
 - **Taille du voisinage** : Environ $|\mathcal{O}|$ $\times$ $(|\mathcal{M}| - 1)$, où $|\mathcal{O}|$ est le nombre total d’opérations et $|\mathcal{M}|$ le nombre de machines.
+
 - **Complexité** : Taille polynomiale par rapport à la taille de l’instance.
+
 - **Couverture de l’espace des solutions** : Ce voisinage permet de modifier progressivement l’affectation des opérations, mais ne suffit pas à atteindre toutes les permutations possibles, notamment les réordonnancements.
 
 #### Voisinage 2 : Échange d’opérations entre machines
 
 - **Principe** : On choisit deux opérations sur deux machines différentes et on échange leurs affectations (machines et éventuellement leurs positions temporelles).
+
 - **Taille du voisinage** : Environ $O(|\mathcal{O}|^2)$ où $|\mathcal{O}|$ est le nombre total d’opérations, car on considère toutes les paires d’opérations.
+
 - **Complexité** : Taille polynomiale.
+
 - **Couverture de l’espace des solutions** : Ce voisinage est plus riche et permet de parcourir un plus large espace de solutions, incluant des permutations complexes, mais ne garantit pas l’accessibilité de toutes les solutions.
 
 ### 2. Implémentation des voisinages
