@@ -40,7 +40,7 @@
 
 - $x_{j,o,m}$ $\in$ $\{0,1\}$ : 1 si l’opération $o$ du job $j$ est affectée à la machine $m$, 0 sinon.
 - $s_{j,o,m}$ $\in$ $\mathbb{R}^+$ : instant de début de l’opération $o$ du job $j$ sur la machine $m$.
-- $a_m^k$ ,$\ b_m^k$ $\in$ $\mathbb{R}^+$ : début et fin de la $k$-ième plage d’activité de la machine $m$ avec $a_m^k \leq b_m^k$.
+- $a_m^k$, $b_m^k$ $\in$ $\mathbb{R}^+$ : début et fin de la $k$-ième plage d’activité de la machine $m$ avec $a_m^k \leq b_m^k$.
 
 #### Contraintes
 
