@@ -51,6 +51,7 @@ Chaque opération doit être affectée à **exactement une machine** parmi celle
 $$
 \sum_{m \in \text{compat}_{j,o}} x_{j,o,m} = 1
 $$
+
 $$
 j \in \mathcal{J}, o \in \mathcal{O}, m \in \mathcal{M}
 $$
@@ -62,6 +63,7 @@ Une opération **ne peut être affectée** qu’à une machine compatible.
 $$
 x_{j,o,m} = 0 \quad \text{si } m \notin \text{compat}_{j,o}
 $$
+
 $$
 j \in \mathcal{J}, o \in \mathcal{O}, m \in \mathcal{M}
 $$
