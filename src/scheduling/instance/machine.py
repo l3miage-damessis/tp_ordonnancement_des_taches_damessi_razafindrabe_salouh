@@ -41,6 +41,7 @@ class Machine(object):
         self._start_times.clear()
         self._stop_times.clear()
         self._available_time = 0
+        self._active = False
 
     @property
     def set_up_time(self) -> int:
@@ -67,7 +68,7 @@ class Machine(object):
         return self._machine_id
 
     @property
-    def scheduled_operations(self) -> List:
+    def scheduled_operations(self) -> List[Operation]:
         '''
         Returns the list of the scheduled operations on the machine.
         '''
@@ -176,7 +177,7 @@ class Machine(object):
         total_processing_time = sum(op.end_time - op.start_time for op in self._scheduled_operations)
         total_setup_time = len(self.start_times) * self._set_up_time
         total_teardown_time = len(self.stop_times) * self._tear_down_time
-        idle_time = self.working_time - total_processing_time - total_setup_time - total_teardown_time
+        idle_time = self.working_time + total_teardown_time - total_processing_time - total_setup_time - total_teardown_time
         energy += idle_time * self._min_consumption
 
         return energy

@@ -96,7 +96,7 @@ Le planning d’utilisation d’une machine ne peut pas dépasser une **durée m
 Pour toute période active `k` d’une machine `m`, on impose :
 
 $$
-b_m^k + t_m^{\text{stop}} \leq T_m^{\text{max}} \quad \forall m \in \mathcal{M},\ \forall k
+b_m^k \leq T_m^{\text{max}} \quad \forall m \in \mathcal{M},\ \forall k
 $$
 
 

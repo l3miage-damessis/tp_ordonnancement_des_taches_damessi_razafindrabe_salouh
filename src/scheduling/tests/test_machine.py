@@ -195,7 +195,7 @@ class TestMachine(unittest.TestCase):
         self.machine.stop(at_time=100)
         expected_energy = (1 * self.machine.set_up_energy) + \
                           (1 * self.machine.tear_down_energy) + \
-                          ((100 - self.machine.set_up_time - self.machine.tear_down_time) * self.machine.min_consumption)
+                          ((100 + self.machine.tear_down_time - self.machine.set_up_time - self.machine.tear_down_time) * self.machine.min_consumption)
         self.assertEqual(self.machine.total_energy_consumption, expected_energy)
         
         # Scenario 2: Add operations
@@ -231,9 +231,8 @@ class TestMachine(unittest.TestCase):
         # Processing time: (20-10) + (45-30) = 10 + 15 = 25
         # Setup time: 1 * set_up_time = 10
         # Teardown time: 1 * tear_down_time = 5
-        # Idle time = Working time - Processing time - Setup time - Teardown time
-        # Idle time = 50 - 25 - 10 - 5 = 10
-        expected_energy += (10 * self.machine.min_consumption)
+        # Idle time = 50 + 5 - 25 - 10 - 5 = 15
+        expected_energy += (15 * self.machine.min_consumption)
 
         self.assertEqual(self.machine.total_energy_consumption, expected_energy)
 
@@ -260,8 +259,8 @@ class TestMachine(unittest.TestCase):
         # Processing time: (20 - 10) = 10
         # Setup time: 1 * set_up_time = 10
         # Teardown time: 1 * tear_down_time = 5
-        # Idle time = 1000 - 10 - 10 - 5 = 975
-        expected_energy_running += (975 * self.machine.min_consumption)
+        # Idle time = 1000 + tear_down_time - 10 - 10 - 5 = 980
+        expected_energy_running += (980 * self.machine.min_consumption)
         self.assertEqual(self.machine.total_energy_consumption, expected_energy_running)
 
     def testStrAndRepr(self):
