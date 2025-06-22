@@ -39,5 +39,5 @@ Ce rapport sera disponible dans le dossier `htmlcov`. Pour consulter les résult
 
 ## Compte Rendu Complet
 
-Le compte rendu complet est disponible dans le fichier [CR.md](./CR.md).  
+Le compte rendu complet est disponible dans le fichier [CR.md](./CR.md).  [CR.pdf](./Compte_Rendu__DAMESSI__SALOUH__RAZAFINDRABE.pdf)
 Veuillez vous référer à ce document pour la modélisation, heuristiques, recherche locale et résultats détaillés.
