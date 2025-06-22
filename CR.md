@@ -72,7 +72,7 @@ $$
 Les opérations d’une même tâche doivent être exécutées **dans l’ordre**. Une opération ne peut commencer qu’après la fin de la précédente.
 
 $$
-s_{j,o+1,m} \geq s_{j,o,m} + \sum_{m \in \text{compat}_{j,o}} x_{j,o,m} \cdot d_{j,o,m}
+s_{j,o+1,m} \geq s_{j,o,m} + \sum_{m \in \mathrm{compat}_{j,o}} x_{j,o,m} \cdot d_{j,o,m}
 $$
 $$
 j \in \mathcal{J}, o \in \mathcal{O}, m \in \mathcal{M}
