@@ -22,9 +22,6 @@ pip install -r requirements.txt`
 ```
 Ce fichier inclut notamment `matplotlib` pour les visualisations et `coverage` pour mesurer la couverture des tests.
 
-## Structure du projet
-
-Le code source est organisé dans le dossier `src/`. Les tests unitaires se trouvent dans `tests/`. Les données d’exemple à utiliser pour les tests sont dans `data/`. Enfin, le compte rendu complet du projet, qui détaille la modélisation, les heuristiques, la recherche locale, et les résultats, est disponible dans le fichier `CR.md`
 
 ## Exécution des tests avec coverage
 

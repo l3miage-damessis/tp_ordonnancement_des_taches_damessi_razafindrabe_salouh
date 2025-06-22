@@ -119,7 +119,7 @@ class Solution(object):
         '''
         Computes the value of the solution
         '''
-        return float('inf') if not self.is_feasible else self.objective
+        return 1.7976931348623157e+308 if not self.is_feasible else self.objective
 
     @property
     def objective(self) -> int:
@@ -164,13 +164,13 @@ class Solution(object):
             return "Solution: Infeasible\n" \
                    f"Cmax: {self.cmax if self.cmax != -1 else 'N/A'}\n" \
                    f"Total Energy: {self.total_energy_consumption}\n" \
-                   f"Objective: {self.objective}\n"
+                   f"Objective: {self.evaluate}\n"
         else:
             return f"Solution: Feasible\n" \
                    f"Cmax: {self.cmax}\n" \
                    f"Total Energy: {self.total_energy_consumption}\n" \
                    f"Sum Ci: {self.sum_ci}\n" \
-                   f"Objective: {self.objective}\n"
+                   f"Objective: {self.evaluate}\n"
 
     def to_csv(self, inst_folder="solutions"):
         '''
@@ -356,12 +356,12 @@ class Solution(object):
                         draw_block(op.start_time, duration, label, colormap(color_index), None, fontsize=8)
 
         # Axis configuration
-        fig.set_size_inches(12, 6)
+        fig.set_size_inches(18, 8)
         ax.set_yticks(range(self._instance.nb_machines))
         ax.set_yticklabels([f'M{mid+1}' for mid in range(self.inst.nb_machines)])
         ax.set_xlabel('Time')
         ax.set_ylabel('Machine')
-        ax.set_title('Gantt Chart')
+        ax.set_title('Gantt Chart Instance ' + str(self._instance.name.upper()))
         ax.grid(True)
 
         # Legend
@@ -378,5 +378,71 @@ class Solution(object):
 
         ax.legend(handles=legend_elements, loc='center left', bbox_to_anchor=(1.01, 0.5), title='Legend')
         fig.tight_layout()
+
+        # Add feasibility info as colored background box or annotation
+        if self.is_feasible:
+            ax.annotate(
+                "FEASIBLE",
+                xy=(0.99, 1.02),
+                xycoords='axes fraction',
+                ha='right',
+                fontsize=14,
+                fontweight='bold',
+                color='green'
+            )
+            ax.spines['top'].set_color('green')
+            ax.spines['bottom'].set_color('green')
+            ax.spines['left'].set_color('green')
+            ax.spines['right'].set_color('green')
+        else:
+            ax.annotate(
+                "INFEASIBLE",
+                xy=(0.99, 1.02),
+                xycoords='axes fraction',
+                ha='right',
+                fontsize=14,
+                fontweight='bold',
+                color='red'
+            )
+            ax.spines['top'].set_color('red')
+            ax.spines['bottom'].set_color('red')
+            ax.spines['left'].set_color('red')
+            ax.spines['right'].set_color('red')
+
+                # Display feasibility and metrics
+        info_text = []
+
+        if self.is_feasible:
+            feasibility_label = "✓ FEASIBLE"
+            feasibility_color = 'green'
+        else:
+            feasibility_label = "✗ INFEASIBLE"
+            feasibility_color = 'red'
+
+        info_text.append(f"{feasibility_label}")
+        info_text.append(f"Objective: {self.evaluate:.2f}")
+        info_text.append(f"Total Energy: {self.total_energy_consumption}")
+        info_text.append(f"Cmax: {self.cmax}")
+        info_text.append(f"Sum Ci: {self.sum_ci}")
+
+        metrics_box = "\n".join(info_text)
+
+        ax.text(
+            1.01, 1.02, metrics_box,
+            transform=ax.transAxes,
+            fontsize=10,
+            verticalalignment='top',
+            bbox=dict(
+                facecolor='white',
+                edgecolor=feasibility_color,
+                boxstyle='round,pad=0.5'
+            ),
+            color=feasibility_color
+        )
+
+        # Frame coloring (optional)
+        for spine in ax.spines.values():
+            spine.set_color(feasibility_color)
+            spine.set_linewidth(1.5)
 
         return plt

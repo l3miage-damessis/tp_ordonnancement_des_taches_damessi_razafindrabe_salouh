@@ -25,11 +25,11 @@
 | $e^{\text{idle}}_m$    | **Énergie** par unité de temps pour une machine $m$ **inactive mais allumée** |
 | $T^{\text{max}}_m$     | **Instant limite** au-delà duquel la machine $m$ **doit être arrêtée** |
 | $x_{j,o,m}$            | Variable binaire : 1 si $o$ du job $j$ est affectée à $m$, 0 sinon |
-| $s_{j,o}$              | Instant de **début** de l’opération $o$ du job $j$ |
+| $s_{j,o,m}$            | Instant de **début** de l’opération $o$ du job $j$ sur la machine $m$ |
 | $a_m^k,\ b_m^k$        | Début et fin de la $k$-ième **plage d’activité** de la machine $m$ |
 | $C_{\max}$             | **Durée totale** du planning |
 | $E$                    | Consommation énergétique totale |
-| $\alpha,\ \beta,\    $ | Coefficients de pondération |
+| $\alpha$, $\beta$ | Coefficients de pondération |
 | $\lambda$              | Coefficient de pénalisation pour contraintes violées |
 
 ---
@@ -38,18 +38,21 @@
 
 #### Variables de décision
 
-- $x_{j,o,m} \in \{0,1\}$ : 1 si l’opération $(j,o)$ est affectée à la machine $m$, 0 sinon.
-- $s_{j,o} \in \mathbb{R}^+$ : instant de début de l’opération $(j,o)$.
-- $a_m^k,\ b_m^k \in \mathbb{R}^+$ : début et fin de la $k$-ième plage d’activité de la machine $m$.
+- $x_{j,o,m}$ $\in$ $\{0,1\}$ : 1 si l’opération $o$ du job $j$ est affectée à la machine $m$, 0 sinon.
+- $s_{j,o,m}$ $\in$ $\mathbb{R}^+$ : instant de début de l’opération $o$ du job $j$ sur la machine $m$.
+- $a_m^k$ ,$\ b_m^k$ $\in$ $\mathbb{R}^+$ : début et fin de la $k$-ième plage d’activité de la machine $m$ avec $a_m^k \leq b_m^k$.
 
-## Contraintes
+#### Contraintes
 
 **1. Affectation unique**
 
 Chaque opération doit être affectée à **exactement une machine** parmi celles compatibles avec elle.
 
 $$
-\sum_{m \in \text{compat}_{j,o}} x_{j,o,m} = 1 \quad \forall j \in \mathcal{J},\ \forall o \in \mathcal{O}_j
+\sum_{m \in \text{compat}_{j,o}} x_{j,o,m} = 1
+$$
+$$
+j \in \mathcal{J}, o \in \mathcal{O}, m \in \mathcal{M}
 $$
 
 **2. Compatibilité machine/opération**
@@ -59,13 +62,19 @@ Une opération **ne peut être affectée** qu’à une machine compatible.
 $$
 x_{j,o,m} = 0 \quad \text{si } m \notin \text{compat}_{j,o}
 $$
+$$
+j \in \mathcal{J}, o \in \mathcal{O}, m \in \mathcal{M}
+$$
 
 **3. Précédence des opérations au sein d'une tâche**
 
 Les opérations d’une même tâche doivent être exécutées **dans l’ordre**. Une opération ne peut commencer qu’après la fin de la précédente.
 
 $$
-s_{j,o+1} \geq s_{j,o} + \sum_{m \in \text{compat}_{j,o}} x_{j,o,m} \cdot d_{j,o,m} \quad \forall j,\ \forall o < |\mathcal{O}_j| - 1
+s_{j,o+1,m} \geq s_{j,o,m} + \sum_{m \in \text{compat}_{j,o}} x_{j,o,m} \cdot d_{j,o,m}
+$$
+$$
+j \in \mathcal{J}, o \in \mathcal{O}, m \in \mathcal{M}
 $$
 
 **4. Non-chevauchement sur une même machine**
@@ -73,9 +82,14 @@ $$
 Deux opérations affectées à la **même machine** ne peuvent pas être exécutées en même temps. Pour toute paire d’opérations affectées à une machine donnée, l’une doit terminer avant que l’autre ne commence.
 
 $$
-\text{Si } x_{j,o,m} = x_{j',o',m} = 1,\quad
-s_{j,o} + d_{j,o,m} \leq s_{j',o'} \quad \text{ou} \quad
-s_{j',o'} + d_{j',o',m} \leq s_{j,o}
+\text{Si } x_{j,o,m} = x_{j',o',m} = 1
+$$
+$$
+s_{j,o,m} + d_{j,o,m} \leq s_{j',o',m} \quad \text{ou} \quad
+s_{j',o',m} + d_{j',o',m} \leq s_{j,o,m}
+$$
+$$
+j \in \mathcal{J}, o \in \mathcal{O}, m \in \mathcal{M}
 $$
 
 **5. Respect des plages actives des machines**
@@ -86,17 +100,21 @@ Pour toute opération affectée à une machine, son intervalle d’exécution `[
 
 $$
 s_{j,o} \in \bigcup_k [a_m^k + t_m^{\text{start}},\ b_m^k] \quad \text{et} \quad
-s_{j,o} + d_{j,o,m} \in \bigcup_k [a_m^k + t_m^{\text{start}},\ b_m^k] \quad \text{si } x_{j,o,m} = 1
+s_{j,o} + d_{j,o,m} \in \bigcup_k [a_m^k + t_m^{\text{start}},\ b_m^k] \quad \text{si } x_{j,o,m} = 1 \quad 
+$$
+$$
+j \in \mathcal{J}, o \in \mathcal{O}, m \in \mathcal{M}
 $$
 
-**6. Limite maximale du planning machine**
+**6. Limite maximale des plages d'activité machine**
 
 Le planning d’utilisation d’une machine ne peut pas dépasser une **durée maximale autorisée** définie par l’entreprise.
 
 Pour toute période active `k` d’une machine `m`, on impose :
 
 $$
-b_m^k \leq T_m^{\text{max}} \quad \forall m \in \mathcal{M},\ \forall k
+a_m^k \leq b_m^k \leq T_m^{\text{max}} \quad 
+\forall m \in \mathcal{M},\ \forall k
 $$
 
 
@@ -107,13 +125,13 @@ $$
 - **Minimisation de la durée totale du planning**.
 
 
-#### 2. Fonction objectif agrégée
+### 2. Fonction objectif agrégée
 
 Une fonction multicritère pondérée peut être proposée :
 
-$
+$$
 \min \left( \alpha \cdot E + \beta \cdot C_{\max} \right)
-$
+$$
 
 
 avec :
@@ -121,7 +139,6 @@ avec :
 - $C_{\max}$ : durée totale du planning,
 - $\alpha, \beta$ : coefficients de pondération.
 
----
 
 ### 3. Évaluation d’une solution
 
@@ -142,9 +159,11 @@ $$
 f_{\text{pénalisée}} = f + \lambda \cdot \text{Violations}
 $$
 
-où $\text{Violations}$ mesure l’ampleur des contraintes violées et $\lambda$ est un coefficient élevé.
+où 
+- $f$ est la valeur de la fonction objectif originale
+- $\lambda$ est un coefficient de pénalité élevé representant le cout d'une violation.
+- $\text{Violations}$ mesure l’ampleur des contraintes violées
 
----
 
 ### 4. Instance sans solution réalisable
 
@@ -152,12 +171,12 @@ où $\text{Violations}$ mesure l’ampleur des contraintes violées et $\lambda$
 
 - 1 job $j_1$ avec 2 opérations $o_0$, $o_1$ ;
 - 1 seule machine $m_1$ compatible ;
-- Durées : $d_{j_1,o_0,m_1} = 60$, $d_{j_1,o_1,m_1} = 70$ ;
+- Durées : $d_{j_1,o_0,m_1}$ = $60$, $d_{j_1,o_1,m_1}$ = $70$ ;
 - Limite de disponibilité : $T^{\text{max}}_{m_1} = 100$.
 
 #### Analyse
 
-La somme des durées est $60 + 70 = 130$, ce qui dépasse la limite de temps autorisée.
+La somme des durées est $60 + 70 = 130$,ce qui dépasse la limite de temps autorisée.
 
 Donc **aucune solution réalisable n’existe** dans cette instance.
 
@@ -173,7 +192,8 @@ L’algorithme construit la solution opération par opération, en attribuant à
 
 La fonction de coût utilisée est :
 
-$Coût(o, j, m) = \alpha × e_{j,o,m} + \beta × d_{j,o,m}$
+$Coût(o, j, m) = (\alpha \times e_{j,o,m}) + (\beta \times d_{j,o,m})$
+
 où :
 - $e_{j,o,m}$ est l'énergie consommée pour exécuter l'operation $o$ du job $j$ sur la machine $m$
 - $d_{j,o,m}$ est la durée d’exécution de l’opération $o$ du job $j$ sur la machine $m$
@@ -190,9 +210,10 @@ Ce choix dépend :
 - du **temps nécessaire pour rallumer** la machine,
 - de la **durée d’inactivité**.
 
-Cela permet de limiter la consommation énergétique dans les phases creuses, en intégrant une décision locale sur l’état de la machine.
+Cela permet de limiter la consommation énergétique dans les phases creuses, en intégrant une décision locale sur l’état de la machine. 
+Il faut noter que n'ayant pas une vision complete ce heuristique ne produit pas la meilleure solution et peut parfois produire des solution non réalisable
 
-#### Complexité
+#### Complexite
 
 Soit :
 - $|\mathcal{O}|$ le nombre total d'opérations
@@ -200,7 +221,7 @@ Soit :
 
 Pour chaque opération, l’algorithme évalue le coût sur toutes les machines admissibles. La complexité est donc :
 
-La complexité est donc : $O(|\mathcal{O}| × |\mathcal{M}|)$
+La complexité est donc : $O(|\mathcal{O}| \times |\mathcal{M}|)$
 
 ### 2. Heuristique non-déterministe
 
@@ -224,7 +245,7 @@ Ce choix dépend :
 Cela permet de limiter la consommation énergétique dans les phases creuses, en intégrant une décision locale sur l’état de la machine.
 
 
-#### Complexité
+#### Complexite
 
 Soit :
 - $|\mathcal{O}|$ le nombre total d'opérations
@@ -233,6 +254,7 @@ Aucune recherche parmi les machines n’est effectuée. Chaque opération se voi
 
 $O(|\mathcal{O}|)$
 
+Comme l'heuristique gloutone certaines solutions produitent par cette heuristique ne sont pas forcement realisable
 ## Recherche locale
 
 ### 1. Proposition de deux voisinages de solutions
@@ -242,7 +264,7 @@ Pour améliorer les solutions initiales obtenues par les heuristiques, nous prop
 #### Voisinage 1 : Réaffectation d’une opération
 
 - **Principe** : On choisit une opération et on modifie la machine sur laquelle elle est exécutée, en la déplaçant vers une autre machine admissible.
-- **Taille du voisinage** : Environ $|\mathcal{O}| \times (|\mathcal{M}| - 1)$, où $|\mathcal{O}|$ est le nombre total d’opérations et $|\mathcal{M}|$ le nombre de machines.
+- **Taille du voisinage** : Environ $|\mathcal{O}|$ $\times$ $(|\mathcal{M}| - 1)$, où $|\mathcal{O}|$ est le nombre total d’opérations et $|\mathcal{M}|$ le nombre de machines.
 - **Complexité** : Taille polynomiale par rapport à la taille de l’instance.
 - **Couverture de l’espace des solutions** : Ce voisinage permet de modifier progressivement l’affectation des opérations, mais ne suffit pas à atteindre toutes les permutations possibles, notamment les réordonnancements.
 
@@ -271,6 +293,25 @@ Deux algorithmes de recherche locale seront développés dans le module `optim.l
   À chaque itération, explore successivement chaque voisinage et sélectionne la **meilleure solution améliorante** parmi les deux.  
   Un critère d’arrêt additionnel pourra être ajouté (par exemple nombre maximal d’itérations sans amélioration).
 
----
+### 4. Comparaison des algorithmes glouton et de recherche locale
 
-### 4. Comparaison des algorithmes
+Nous avons comparé les performances de l’heuristique gloutonne (Greedy) et des algorithmes de recherche locale (FirstNeighborLocalSearch avec un voisinage, BestNeighborLocalSearch avec deux voisinages) sur plusieurs instances de taille variée avec des valeurs differentes (`jsp1`, `jsp10`, `jsp50`, `jsp100`). Chaque heuristique non-déterministe a été exécutée 100 fois, en conservant la meilleure solution.
+
+| Instance | Greedy (best eval) | Greedy (temps moyen) | FirstNeighborLS (best eval) | FirstNeighborLS (temps moyen) | BestNeighborLS (best eval) | BestNeighborLS (temps moyen) |
+|----------|--------------------|---------------------|-----------------------------|-------------------------------|----------------------------|------------------------------|
+| jsp1     | 35.5               | ~0.000s             | 30.5                        | 0.005s                        | 32.5                       | 0.008s                       |
+| jsp10    | inf (infeasible)   | 0.003s              | 208                         | 0.859s                        | 199.5                      | 6.422s                       |
+| jsp50    | 253                | 0.004s              | 185.5                       | 0.723s                        | 198.5                      | 6.400s                       |
+| jsp100   | inf (infeasible)   | 0.003s              | 287                         | 1.810s                        | 268                        | 12.480s                      |
+
+### Analyse
+
+- **Temps de calcul** : L’heuristique gloutonne est très rapide, quasiment instantanée, même sur les instances les plus grandes. Les recherches locales nécessitent plus de temps, surtout avec plusieurs voisinages.
+
+- **Qualité des solutions** : La recherche locale améliore significativement la qualité par rapport au glouton sur les instances faisables (`jsp1`, `jsp50`). Sur les plus grandes instances (`jsp10`, `jsp100`), le glouton génère parfois des solutions infaisables (violations de contraintes).
+
+- **Robustesse** : La recherche locale, en explorant plusieurs voisins, trouve des solutions réalisables de meilleure qualité, au prix d’un coût computationnel plus élevé.
+
+### Conclusion
+
+L’heuristique gloutonne permet une construction rapide de solutions mais sans garantie de faisabilité ni de qualité optimale. Les algorithmes de recherche locale offrent un compromis en améliorant la faisabilité et la qualité, au prix d’un temps de calcul plus important, proportionnel à la complexité de l’instance et du nombre de voisinages utilisés.

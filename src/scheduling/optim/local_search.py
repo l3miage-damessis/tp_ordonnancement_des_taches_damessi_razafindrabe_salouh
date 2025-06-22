@@ -85,7 +85,7 @@ if __name__ == "__main__":
     from src.scheduling.tests.test_utils import TEST_FOLDER_DATA
     import os
 
-    instance_path = os.path.join(TEST_FOLDER_DATA, "jsp11")
+    instance_path = os.path.join(TEST_FOLDER_DATA, "jsp1")
     inst = Instance.from_file(instance_path)
 
     from src.scheduling.optim.constructive import NonDeterminist
@@ -96,7 +96,10 @@ if __name__ == "__main__":
     sol1 = heur1.run(inst, NonDeterminist, MyNeighborhood1)
 
     plt1 = sol1.gantt("tab20")
-    plt1.savefig("gantt_FirstNeighbor.png")
+    if sol1.is_feasible:
+        plt1.savefig("gantt_FirstNeighbor_Feasible.png")
+    else:
+        plt1.savefig("gantt_FirstNeighbor_Infeasible.png")
     print("[FirstNeighbor] Gantt saved to gantt_FirstNeighbor.png")
 
     # --- BestNeighborLocalSearch ---
@@ -104,5 +107,8 @@ if __name__ == "__main__":
     sol2 = heur2.run(inst, NonDeterminist, MyNeighborhood1, MyNeighborhood2)
 
     plt2 = sol2.gantt("tab20")
-    plt2.savefig("gantt_BestNeighbor.png")
+    if sol2.is_feasible:
+        plt1.savefig("gantt_BestNeighbor_Feasible.png")
+    else:
+        plt1.savefig("gantt_BestNeighbor_Infeasible.png")
     print("[BestNeighbor] Gantt saved to gantt_BestNeighbor.png")

@@ -100,7 +100,7 @@ class Greedy(Heuristic):
 
             if best_option is None:
                 print("Error: no valid machine found for ready operations.")
-                break
+                continue
 
             chosen_op, chosen_machine, start_time, duration = best_option
 
@@ -233,13 +233,19 @@ class NonDeterminist(Heuristic):
     
 if __name__ == "__main__":
     # Example of playing with the heuristics
-    inst = Instance.from_file(TEST_FOLDER_DATA + os.path.sep + "jsp1")
+    inst = Instance.from_file(TEST_FOLDER_DATA + os.path.sep + "jsp3")
     heurGreedy = Greedy(params={'alpha_local': 1.0, 'beta_local': 1.0})
     solGreedy = heurGreedy.run(inst)
     pltGreedy = solGreedy.gantt("tab20")
     solGreedy.to_csv()
-    pltGreedy.savefig("ganttGreedyConstructive.png")
+    if solGreedy.is_feasible : 
+        pltGreedy.savefig("gantt_constructive_greedy_feasible.png")
+    else :
+        pltGreedy.savefig("gantt_constructive_greedy_infeasible.png")
     heurNonDeterminist = NonDeterminist()
     solNonDeterminist = heurNonDeterminist.run(inst)
     pltNonDeterminist = solNonDeterminist.gantt("tab20")
-    pltNonDeterminist.savefig("ganttNonDeterministConstructive.png")
+    if solNonDeterminist.is_feasible : 
+        pltGreedy.savefig("gantt_nondeterminist_constructive_feasible.png")
+    else :
+        pltGreedy.savefig("gantt_nondeterminist_constructive_infeasible.png")
