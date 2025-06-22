@@ -123,122 +123,6 @@ class Greedy(Heuristic):
 
         return solution
     
-# # class NonDeterminist(Heuristic):
-# #     '''
-# #     Heuristic that returns different values for different runs with the same parameters
-# #     (or different values for different seeds and otherwise same parameters)
-# #     '''
-
-# #     def __init__(self, params: Dict=dict()):
-# #         '''
-# #         Constructor
-# #         @param params: The parameters of your heuristic method if any as a
-# #                dictionary. Implementation should provide default values in the function.
-# #         '''
-# #         raise "Not implemented error"
-
-# #     def run(self, instance: Instance, params: Dict=dict()) -> Solution:
-# #         '''
-# #         Computes a solution for the given instance.
-# #         Implementation should provide default values in the function
-# #         (the function will be evaluated with an empty dictionary).
-
-# #         @param instance: the instance to solve
-# #         @param params: the parameters for the run
-# #         '''
-# #         raise "Not implemented error"
-
-
-# class NonDeterminist(Heuristic):
-#     """
-#     Heuristic that returns different solutions at each execution.
-#     Randomized scheduling among top-k earliest finish time candidates.
-#     """
-
-#     def __init__(self, params: Dict = dict()):
-#         super().__init__(params)
-#         self.params.setdefault('selection_pool_size', 0.2)  # Top-k% selection pool
-#         self.params.setdefault('seed', None)  # Optional seed for reproducibility
-
-#     def run(self, instance: Instance, params: Dict = dict()) -> Solution:
-#         current_params = {**self.params, **params}
-
-#         # Graine : générée automatiquement si absente
-#         seed = current_params.get('seed')
-#         if seed is None:
-#             seed = int.from_bytes(os.urandom(8), 'big')
-#             print(f"[NonDeterminist] Random seed (auto-generated): {seed}")
-#         else:
-#             print(f"[NonDeterminist] Using provided seed: {seed}")
-#         random.seed(seed)
-
-#         solution = Solution(instance)
-#         total_operations = instance.nb_operations
-#         scheduled_operations = 0
-
-#         while scheduled_operations < total_operations:
-#             ready_operations = list(solution.available_operations)
-#             if not ready_operations:
-#                 print("Warning: Deadlock or unfeasible instance detected.")
-#                 break
-
-#             random.shuffle(ready_operations) 
-
-#             options: List[Tuple[Operation, Machine, float, float]] = []
-
-#             for op in ready_operations:
-#                 machine_ids = list(op._machine_options.keys())
-#                 random.shuffle(machine_ids) 
-#                 for m_id in machine_ids:
-#                     duration, _ = op._machine_options[m_id]
-#                     machine = instance.get_machine(m_id)
-
-#                     job_ready = op.min_start_time
-#                     machine_ready = machine.available_time
-
-#                     if machine.active:
-#                         start_time = max(job_ready, machine_ready)
-#                     else:
-#                         setup_ready = max(machine_ready, job_ready - machine.set_up_time) + machine.set_up_time
-#                         start_time = max(job_ready, setup_ready)
-
-#                     end_time = start_time + duration
-#                     options.append((op, machine, start_time, end_time))
-
-#             if not options:
-#                 print("Error: No scheduling options available.")
-#                 break
-
-#             options.sort(key=lambda x: x[3])
-#             k = max(1, int(len(options) * current_params['selection_pool_size']))
-#             selection_pool = options[:k]
-
-#             op, machine, start_time, end_time = random.choice(selection_pool)
-
-#             solution.schedule(op, machine)
-#             scheduled_operations += 1
-
-#             for machine in instance.machines:
-#                 ops = sorted(machine.scheduled_operations, key=lambda op: op.start_time)
-#                 for i in range(len(ops) - 1):
-#                     end_i = ops[i].end_time
-#                     start_j = ops[i+1].start_time
-#                     gap = start_j - end_i
-
-#                     if gap > machine.tear_down_time + machine.set_up_time:
-#                         energy_cost = machine.tear_down_energy + machine.set_up_energy
-#                         energy_saving = gap * machine.min_consumption
-
-#                         if energy_cost < energy_saving and machine.active:
-#                             machine.stop(end_i)
-
-
-#         for machine in instance.machines:
-#             if machine.active:
-#                 machine.stop(machine.available_time)
-
-#         return solution
-
 class NonDeterminist(Heuristic):
     '''
     Non-deterministic heuristic that builds a solution by randomly assigning 
@@ -354,8 +238,8 @@ if __name__ == "__main__":
     solGreedy = heurGreedy.run(inst)
     pltGreedy = solGreedy.gantt("tab20")
     solGreedy.to_csv()
-    pltGreedy.savefig("ganttGreedy.png")
+    pltGreedy.savefig("ganttGreedyConstructive.png")
     heurNonDeterminist = NonDeterminist()
     solNonDeterminist = heurNonDeterminist.run(inst)
     pltNonDeterminist = solNonDeterminist.gantt("tab20")
-    pltNonDeterminist.savefig("ganttNonDeterminist.png")
+    pltNonDeterminist.savefig("ganttNonDeterministConstructive.png")

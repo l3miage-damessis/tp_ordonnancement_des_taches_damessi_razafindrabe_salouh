@@ -60,13 +60,13 @@ class Solution(object):
         # 0. All operations must be assigned
         for op in self.all_operations:
             if not op.assigned:
-                print(f"Constraint violated: Operation {op.operation_id} is not assigned.")
+                print(f"Constraint violated: Operation {str(op)} is not assigned.")
                 return False
 
         # 1. Machine compatibility: assigned machine must be valid for the operation
         for op in self.all_operations:
             if op.assigned_to not in op.machine_options:
-                print(f"Constraint violated: Operation {op.operation_id} assigned to incompatible machine {op.assigned_to}.")
+                print(f"Constraint violated: Operation {str(op)} assigned to incompatible machine {op.assigned_to}.")
                 return False
 
         # 2. Precedence: predecessors must finish before the operation starts
@@ -74,10 +74,10 @@ class Solution(object):
             for op in job.operations:
                 for pred_op in op.predecessors:
                     if not pred_op.assigned:
-                        print(f"Constraint violated: Predecessor {pred_op.operation_id} of operation {op.operation_id} is not assigned.")
+                        print(f"Constraint violated: Predecessor {str(pred_op)} of operation {str(op)} is not assigned.")
                         return False
                     if op.start_time < pred_op.end_time:
-                        print(f"Constraint violated: Operation {op.operation_id} starts before its predecessor {pred_op.operation_id} ends.")
+                        print(f"Constraint violated: Operation {str(op)} starts before its predecessor {str(pred_op)} ends.")
                         return False
 
         # 3. No overlap: operations on the same machine must not overlap
@@ -85,7 +85,7 @@ class Solution(object):
             scheduled_ops = sorted(machine.scheduled_operations, key=lambda op: op.start_time)
             for i in range(len(scheduled_ops) - 1):
                 if scheduled_ops[i].end_time > scheduled_ops[i + 1].start_time:
-                    print(f"Constraint violated: Operations {scheduled_ops[i].operation_id} and {scheduled_ops[i + 1].operation_id} overlap on machine {machine.machine_id}.")
+                    print(f"Constraint violated: Operations {str(scheduled_ops[i])} and {str(scheduled_ops[i + 1])} overlap on machine {str(machine)}.")
                     return False
 
         # 4. Operations must be within active periods of the machine
@@ -95,20 +95,19 @@ class Solution(object):
                 start = machine.start_times[i] + machine.set_up_time
                 end = machine.stop_times[i]
                 active_intervals.append((start, end))
-
+                
             for op in machine.scheduled_operations:
                 op_start = op.start_time
                 op_end = op.end_time
                 if not any(start <= op_start and op_end <= end for start, end in active_intervals):
-                    print(f"Constraint violated: Operation {op.operation_id} ({op_start}-{op_end}) not within any active interval on machine {machine.machine_id}.")
+                    print(f"Constraint violated: Operation {str(op)} ({op_start}-{op_end}) not within any active interval on machine {str(machine)}.")
                     return False
 
         # 5. Machine's end time must respect max time constraint
         for machine in self.inst.machines:
             for i in range(len(machine.start_times)):
-                b_mk = machine.stop_times[i]
-                if b_mk > machine._end_time:
-                    print(f"Constraint violated: Machine {machine.machine_id} exceeds max allowed time ({machine._end_time}).")
+                if machine.stop_times[i] > machine._end_time:
+                    print(f"Constraint violated: Machine {str(machine)} exceeds max allowed time ({str(machine)}).")
                     return False
 
         return True
@@ -267,7 +266,6 @@ class Solution(object):
             start_up_time = max(machine.available_time, operation.min_start_time - machine.set_up_time)
             machine.start(start_up_time)
             start_time = max(machine.available_time, start_up_time + machine.set_up_time)
-        print("start_time " + str(start_time))
         machine.add_operation(operation, start_time)
 
     def unschedule(self, op: Operation):

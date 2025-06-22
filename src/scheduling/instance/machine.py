@@ -41,6 +41,7 @@ class Machine(object):
         self._start_times.clear()
         self._stop_times.clear()
         self._available_time = 0
+        self._active = False
 
     @property
     def set_up_time(self) -> int:
